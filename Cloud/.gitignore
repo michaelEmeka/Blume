@@ -1,0 +1,26 @@
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+.terraform.lock.hcl
+
+# Certificates — NEVER commit these
+iot/certificates/
+iot/certs/
+*.pem
+*.crt
+*.key
+
+# Python
+__pycache__/
+*.pyc
+.env
+venv/
+*.zip
+
+# AWS
+.aws/
+
+# OS
+.DS_Store
