@@ -17,7 +17,16 @@ PASSWORD="FarmerPass123!"
 # Check required tools
 command -v aws >/dev/null 2>&1 || { echo "AWS CLI not installed"; exit 1; }
 command -v curl >/dev/null 2>&1 || { echo "curl not installed"; exit 1; }
-command -v jq >/dev/null 2>&1 || { echo "jq not installed"; exit 1; }
+
+if command -v jq >/dev/null 2>&1; then
+  JSON_TOOL=(jq .)
+elif command -v python3 >/dev/null 2>&1; then
+  JSON_TOOL=(python3 -m json.tool)
+elif command -v python >/dev/null 2>&1; then
+  JSON_TOOL=(python -m json.tool)
+else
+  echo "jq not installed and no Python JSON fallback available"; exit 1;
+fi
 
 echo "Step 1: Authenticating with Cognito"
 
@@ -39,12 +48,12 @@ echo "Authentication successful"
 echo "Step 2: Query soil readings"
 
 curl -s -H "Authorization: Bearer $TOKEN" \
-  "$API_URL/farms/$FARM_ID/soil?node_id=$NODE_ID" | jq .
+  "$API_URL/farms/$FARM_ID/soil?node_id=$NODE_ID" | "${JSON_TOOL[@]}"
 
 echo "Step 3: Query water readings"
 
 curl -s -H "Authorization: Bearer $TOKEN" \
-  "$API_URL/farms/$FARM_ID/water?tank_id=$TANK_ID" | jq .
+  "$API_URL/farms/$FARM_ID/water?tank_id=$TANK_ID" | "${JSON_TOOL[@]}"
 
 echo "Step 4: Send command"
 
@@ -56,6 +65,6 @@ curl -s -X POST \
     \"farm_id\": \"$FARM_ID\",
     \"target\": \"$NODE_ID\"
   }" \
-  "$API_URL/farms/$FARM_ID/commands" | jq .
+  "$API_URL/farms/$FARM_ID/commands" | "${JSON_TOOL[@]}"
 
 echo "Test completed"
